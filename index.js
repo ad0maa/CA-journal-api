@@ -26,4 +26,13 @@ app.post("/entries", (req, res) => {
   res.status(201).send(newEntry);
 });
 
+app.get("/entries/:id", (req, res) => {
+  const entry = entries[req.params.id];
+  if (entry) {
+    res.send(entry);
+  } else {
+    res.status(404).send({ error: "Entry not found" });
+  }
+});
+
 app.listen(port, () => console.log(`App running @ http//localhost:${port}`));
