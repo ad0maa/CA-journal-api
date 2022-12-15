@@ -3,11 +3,11 @@ import mongoose from "mongoose";
 
 const categories = ["Food", "Coding", "Work", "Other"];
 
-const entries = [
-  { category: "Food", content: "Hello!" },
-  { category: "Coding", content: "Express is cool!" },
-  { category: "Work", content: "Another day at the office." },
-];
+// const entries = [
+//   { category: "Food", content: "Hello!" },
+//   { category: "Coding", content: "Express is cool!" },
+//   { category: "Work", content: "Another day at the office." },
+// ];
 
 // Connect to MongoDB via Mongoose
 mongoose.connect('mongodb+srv://admin:Password123@cluster0.apiqvhy.mongodb.net/journal?retryWrites=true&w=majority')
@@ -21,6 +21,8 @@ mongoose.connect('mongodb+srv://admin:Password123@cluster0.apiqvhy.mongodb.net/j
     content: {type: String, required: true}
   });
 
+// create categories schema
+
 
 // Create a Mongoose model based on the schema
 const EntryModel = mongoose.model('Entry', entrySchema);
@@ -32,8 +34,14 @@ const port = 4001;
 app.use(express.json());
 
 app.get("/", (request, response) => response.send({ info: "Journal API" }));
+
+
 app.get("/categories", (req, res) => res.status(200).send(categories));
-app.get("/entries", (req, res) => res.status(200).send(entries));
+
+
+app.get("/entries", async (req, res) => res.send(await EntryModel.find()));
+
+app.get("/entries/food", async (req, res) => res.send(await EntryModel.find({category: "Food"})));
 
 // POST new entry to the database
 app.post("/entries", async (req, res) => {
@@ -53,14 +61,18 @@ catch (err) {
 })
 
 
-app.get("/entries/:id", (req, res) => {
-  const entry = entries[req.params.id];
+app.get("/entries/:id", async (req, res) => {
+  try {
+    const entry = await EntryModel.findById(req.params.id);
   if (entry) {
     res.send(entry);
   } else {
     res.status(404).send({ error: "Entry not found" });
   }
-});
+}
+catch (err) {
+  res.status(500).send({ error: err.message });
+}});
 
 
 
