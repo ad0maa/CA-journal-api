@@ -10,23 +10,32 @@ const categories = ["Food", "Coding", "Work", "Other"];
 // ];
 
 // Connect to MongoDB via Mongoose
-mongoose.connect('mongodb+srv://admin:Password123@cluster0.apiqvhy.mongodb.net/journal?retryWrites=true&w=majority')
-  .then((m) => m.connection.readyState === 1 ? console.log('Mongoose Connected!') : console.log('Mongoose failed to connect.'))
+mongoose
+  .connect(
+    "mongodb+srv://admin:Password123@cluster0.apiqvhy.mongodb.net/journal?retryWrites=true&w=majority"
+  )
+  .then((m) =>
+    m.connection.readyState === 1
+      ? console.log("Mongoose Connected!")
+      : console.log("Mongoose failed to connect.")
+  )
   .catch((err) => console.log(err));
 
-
 // Create a Mongoose schema to define the structure of the model
-  const entrySchema = new mongoose.Schema({
-    category: {type: String, required: true},
-    content: {type: String, required: true}
-  });
-
-// create categories schema
-
+const entrySchema = new mongoose.Schema({
+  category: { type: String, required: true },
+  content: { type: String, required: true },
+});
 
 // Create a Mongoose model based on the schema
-const EntryModel = mongoose.model('Entry', entrySchema);
+const EntryModel = mongoose.model("Entry", entrySchema);
 
+// Categories
+const categorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+});
+
+const CategoryModel = mongoose.model("Category", categorySchema);
 
 const app = express();
 const port = 4001;
@@ -35,46 +44,58 @@ app.use(express.json());
 
 app.get("/", (request, response) => response.send({ info: "Journal API" }));
 
-
-app.get("/categories", (req, res) => res.status(200).send(categories));
-
+app.get("/categories", async (req, res) =>
+  res.status(200).send(await CategoryModel.find())
+);
 
 app.get("/entries", async (req, res) => res.send(await EntryModel.find()));
 
-app.get("/entries/food", async (req, res) => res.send(await EntryModel.find({category: "Food"})));
+app.get("/entries/food", async (req, res) =>
+  res.send(await EntryModel.find({ category: "Food" }))
+);
 
 // POST new entry to the database
 app.post("/entries", async (req, res) => {
-  
   try {
-  // Create a new entry object with values passed in from the request
-  const { category, content } = req.body;
-  const newEntry = { category, content };
-  // Push new entry object into entries array
-  const insertedEntry = await EntryModel.create(newEntry);
-  // Send the new entry with 201 status code
-  res.status(201).send(insertedEntry);
-}
-catch (err) {
-  res.status(500).send({ error: err.message });
-}
-})
-
+    // Create a new entry object with values passed in from the request
+    const { category, content } = req.body;
+    const newEntry = { category, content };
+    // Push new entry object into entries array
+    const insertedEntry = await EntryModel.create(newEntry);
+    // Send the new entry with 201 status code
+    res.status(201).send(insertedEntry);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
 
 app.get("/entries/:id", async (req, res) => {
   try {
     const entry = await EntryModel.findById(req.params.id);
-  if (entry) {
-    res.send(entry);
-  } else {
-    res.status(404).send({ error: "Entry not found" });
+    if (entry) {
+      res.send(entry);
+    } else {
+      res.status(404).send({ error: "Entry not found" });
+    }
+  } catch (err) {
+    res.status(500).send({ error: err.message });
   }
-}
-catch (err) {
-  res.status(500).send({ error: err.message });
-}});
+});
 
-
+app.post("/entries", async (req, res) => {
+  try {
+    // 1. Create a new entry object with values passed in from the request
+    const { category, content } = req.body;
+    const newEntry = { category, content };
+    // 2. Push the new entry to the entries array
+    // entries.push(newEntry)
+    const insertedEntry = await EntryModel.create(newEntry);
+    // 3. Send the new entry with 201 status
+    res.status(201).send(insertedEntry);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
 
 // Insert a new entry into an array
 // app.post("/entries", (req, res) => {
