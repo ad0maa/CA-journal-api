@@ -1,9 +1,7 @@
-import express from 'express'
-import { EntryModel } from '../db.js'
+import express from "express";
+import { EntryModel } from "../db.js";
 
-const router = express.Router()
-
-
+const router = express.Router();
 
 router.get("/", async (req, res) =>
   res.send(
@@ -85,4 +83,4 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-export default router
+export default router;

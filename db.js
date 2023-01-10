@@ -1,34 +1,39 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import dotenv from 'dotenv'
+dotenv.config()
 
-mongoose.set('strictQuery', true)
+mongoose.set("strictQuery", true);
 
-async function dbClose(){
+async function dbClose() {
   await mongoose.connection.close();
   console.log("Database disconnected!");
 }
 
 // Connect to a MongoDB via Mongoose
 try {
-  const m = await mongoose.connect("mongodb+srv://admin:Password123@cluster0.apiqvhy.mongodb.net/journal?retryWrites=true&w=majority")
-  console.log(m.connection.readyState === 1 ? 'Mongoose connected' : 'Moongose failed to connect')
-}
-catch (err) {
-  console.log(err)
+  const m = await mongoose.connect(process.env.ATLAS_DB_URL);
+  console.log(
+    m.connection.readyState === 1
+      ? "Mongoose connected"
+      : "Moongose failed to connect"
+  );
+} catch (err) {
+  console.log(err);
 }
 
 // Create a Mongoose schema to define the structure of a model
 const entrySchema = new mongoose.Schema({
-  category: { type: mongoose.ObjectId, ref: 'Category' },
-  content: { type: String, required: true }
-})
+  category: { type: mongoose.ObjectId, ref: "Category" },
+  content: { type: String, required: true },
+});
 
 // Create a Mongoose model based on the schema
-const EntryModel = mongoose.model('Entry', entrySchema)
+const EntryModel = mongoose.model("Entry", entrySchema);
 
 const categorySchema = new mongoose.Schema({
-  name: { type: String, require: true }
-})
+  name: { type: String, require: true },
+});
 
-const CategoryModel = mongoose.model('Category', categorySchema)
+const CategoryModel = mongoose.model("Category", categorySchema);
 
-export { EntryModel, CategoryModel, dbClose }
+export { EntryModel, CategoryModel, dbClose };
