@@ -25,7 +25,12 @@ router.post("/", async (req, res) => {
     // Push new entry object into entries array
     const insertedEntry = await EntryModel.create(newEntry);
     // Send the new entry with 201 status code
-    res.status(201).send(insertedEntry);
+    res.status(201).send(
+      await insertedEntry.populate({
+        path: "category",
+        select: ["name"],
+      })
+    );
   } catch (err) {
     res.status(500).send({ error: err.message });
   }
